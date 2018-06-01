@@ -41,9 +41,10 @@ def test():
     status=200,
     replies=[{
       'type': 'text',
-      'content': 'The price of %s is :\n%f BTC, \n%f USD, and \n%f EUR.' % (crypto_name, r.json()['BTC'], r.json()['USD'], r.json()['EUR'])
+      'content': '%s 的价格是 %s is :\n%f BTC, \n%f USD, and \n%f EUR.' % (crypto_name, r.json()['BTC'], r.json()['USD'], r.json()['EUR'])
     }]
   )
+
 @app.route('/view', methods=['POST'])
 def view():
   print(port)
