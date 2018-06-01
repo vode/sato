@@ -7,15 +7,69 @@ app = Flask(__name__)
 port = int(os.environ["PORT"])
 print(port)
 
+mapper = {
+  "比特币": "BTC",
+  "火币平台币": "HT",
+  "莱特币": "LTC",
+  "以太币": "ETH",
+}
+crypto_list = [
+"BTC",
+"HT",
+"LTC",
+"ETH",
+"XVG",
+"EOS",
+"XMR",
+"比特币",
+"火币平台币",
+"莱特币",
+"以太币",
+"GRS",
+"ETH",
+"BTC",
+"BCH",
+"HT",
+"QTUM",
+"BQC",
+"NCC",
+"XRP",
+"CAB",
+"BQC",
+"PHO",
+"GPL",
+"MND",
+"NEO",
+"XMR",
+"WTC",
+"ADA"
+]
+
+def format(name):
+  if name in mapper:
+    return mapper[name]
+  else:
+    return name
+
+def get_name(data):
+  try:
+    for crypto in crypto_list:
+      if crypto in data['nlp']['source']:
+        return format(crypto)
+    name = data['nlp']['entities']['crypto_name'][0]['raw']
+    return format(name)
+  except Exception:
+    return ""
+
 @app.route('/', methods=['POST'])
 def index():
   print(port)
+  
   data = json.loads(request.get_data())
   # FETCH THE CRYPTO NAME
-  crypto_name = data['nlp']['entities']['crypto_name'][0]['raw']
+  crypto_name = get_name(data)
+
   try:
-    # FETCH THE CRYPTO NAME
-    crypto_name = data['nlp']['entities']['crypto_name'][0]['raw']
 
     # FETCH BTC/USD/EUR PRICES
     r = requests.get("https://min-api.cryptocompare.com/data/price?fsym="+crypto_name+"&tsyms=BTC,USD,EUR")
@@ -28,11 +82,16 @@ def index():
       }]
     )
   except Exception:
+    response_text = ""
+    if crypto_name != "":
+      response_text = "不好意思，小火查不到 %s 的行情呢" % (crypto_name)
+    else:
+      response_text = "不好意思，小火找不到您说的货币呢"
     return jsonify(
       status=200,
       replies=[{
         'type': 'text',
-        'content': "不好意思，小火查不到 %s 的行情呢" % (crypto_name)
+        'content': response_text
       }]
     )
 
