@@ -11,7 +11,8 @@ print(port)
 def index():
   print(port)
   data = json.loads(request.get_data())
-
+  # FETCH THE CRYPTO NAME
+  crypto_name = data['nlp']['entities']['crypto_name']['raw']
   try:
     # FETCH THE CRYPTO NAME
     crypto_name = data['nlp']['entities']['crypto_name']['raw']
@@ -31,7 +32,7 @@ def index():
       status=200,
       replies=[{
         'type': 'text',
-        'content': "不好意思，小火查不到%s币行情呢" % (crypto_name)
+        'content': "不好意思，小火查不到 %s 的行情呢" % (crypto_name)
       }]
     )
 
