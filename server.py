@@ -25,6 +25,7 @@ crypto_list = [
 "火币平台币",
 "莱特币",
 "以太币",
+"火币平台币",
 "GRS",
 "ETH",
 "BTC",
@@ -78,7 +79,7 @@ def index():
       status=200,
       replies=[{
         'type': 'text',
-        'content': '%s 的价格是 :\n%f BTC, \n%f USD, and \n%f EUR.' % (crypto_name, r.json()['BTC'], r.json()['USD'], r.json()['EUR'])
+        'content': '%s 的价格是 :\n%f BTC, \n%f USD, \n%f EUR.' % (crypto_name, r.json()['BTC'], r.json()['USD'], r.json()['EUR'])
       }]
     )
   except Exception:
