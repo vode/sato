@@ -31,7 +31,7 @@ def index():
       status=200,
       replies=[{
         'type': 'text',
-        'content': "不好意思，小火查不到您输入的货币行情呢"
+        'content': "不好意思，小火查不到%s币行情呢" % (crypto_name)
       }]
     )
 
