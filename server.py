@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 import json
 import requests
 import os
-
+import re
 app = Flask(__name__)
 port = int(os.environ["PORT"])
 print(port)
@@ -51,16 +51,24 @@ def format(name):
     return mapper[name]
   else:
     return name
+def match(name):
+  pattern = re.compile(r'[a-zA-Z]*')
+  match_result = re.search(pattern,name).group()
+  return match_result
 
 def get_name(data):
   try:
     for crypto in crypto_list:
       if crypto in data['nlp']['source']:
         return format(crypto)
+    match_result = match(data['nlp']['source'])
+    if match_result!= None and match_result != "":
+      return match_result
     name = data['nlp']['entities']['crypto_name'][0]['raw']
     return format(name)
   except Exception:
     return ""
+
 
 @app.route('/', methods=['POST'])
 def index():
