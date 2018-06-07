@@ -69,8 +69,7 @@ def gen_crypto_info(crypto_name):
       change24 = r.json()['DISPLAY'][crypto_name]["USD"]["CHANGEPCT24HOUR"]
       changeday = r.json()['DISPLAY'][crypto_name]["USD"]["CHANGEDAY"]
       official_name = get_official_name(crypto_name)
-      return '货币代号: %s\n 货币全称:%s\n 实时价格: %s\n 今日最高价：%s\n 今日最低价: %s\n 24小时涨幅: %s\n 今日涨幅: %s\n 来源交易所: %s' 
-            %(crypto_name,official_name, price,openday,highday,lowday,change24,changeday，market)
+      return '货币代号: %s\n 货币全称:%s\n 实时价格: %s\n 今日最高价：%s\n 今日最低价: %s\n 24小时涨幅: %s\n 今日涨幅: %s\n 来源交易所: %s' %(crypto_name,official_name, price,openday,highday,lowday,change24,changeday,market)
     except Exception:
       return "不好意思，小火查不到 %s 的行情呢" % (crypto_name)
   else:
