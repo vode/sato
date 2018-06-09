@@ -184,11 +184,14 @@ def get_query(data):
 
 
 def get_market_price(crypto_name):
-  crypto_name = crypto_name.upper()
-  response_text = get_huobi_info(crypto_name)
-  if response_text is None:
-    response_text = gen_crypto_info(crypto_name)
-  return response_text
+  try:
+    crypto_name = crypto_name.upper()
+    response_text = get_huobi_info(crypto_name)
+    if response_text is None:
+      response_text = gen_crypto_info(crypto_name)
+    return response_text
+  except Exception:
+    return (traceback.format_exc())
 
 def get_huobi_info(crypto_name):
   symbol = crypto_name.lower()+'usdt'
