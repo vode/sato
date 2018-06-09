@@ -243,8 +243,9 @@ def last():
     if("火币网" in query):
       response_text = "火币集团是全球领先的数字资产金融服务商。2013年，火币创始团队看到了区块链行业的巨大发展潜力，心怀推动全球新金融改革的愿景，创立火币集团。火币集团以“让金融更高效，让财富更自由”作为集团使命，秉承“用户至上”的服务理念，致力于为全球用户提供安全、专业、诚信、优质的服务。目前，火币集团已完成对新加坡、美国、日本、韩国、香港等多个国家及地区的布局。"
     elif(get_name(data)!=""):
+      response_text = query
       query=get_name(data)
-      response_text = get_market_price(query)
+      # response_text = get_market_price(query)
     else:
       response_text = "不好意思，小火不太明白你的问题呢\n你可以尝试提问：\n推荐群\n比特币的价格\n如何下载火币App\n火币网简介\n"
     
