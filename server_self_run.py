@@ -140,6 +140,7 @@ info_dic = r.json()["Data"]
 
 def is_crypto(name):
   print(name)
+  name = name.upper()
   if name in mapper or name in info_dic:
     return True
   else:
@@ -155,11 +156,19 @@ def match(name):
   pattern = re.compile(r'[a-zA-Z]*')
   match_result = re.search(pattern,name).group()
   return match_result
+import re
+pattern = re.compile("^([A-Za-z])+$")
 
 def get_name(data):
+  query = data['nlp']['source']
+  if(pattern.match(query)!= None):
+    return query
+  match_pattern = re.search('([A-Za-z]+)',query)
+  if(match_pattern!=None):
+    return match_pattern.group(0)
   try:
     for crypto in info_dic.keys():
-      if crypto in data['nlp']['source'] or crypto.lower() in data['nlp']['source']:
+      if crypto in data['nlp']['source'] or crypto.upper() in data['nlp']['source']:
         return format(crypto)
     for key in mapper.keys():
       if key in data['nlp']['source']:
@@ -174,7 +183,7 @@ def get_query(data):
 
 def get_market_price(crypto_name):
   crypto_name = crypto_name.upper()
-  response_txt = get_huobi_info(crypto_name)
+  response_text = get_huobi_info(crypto_name)
   if response_text is None:
     response_text = gen_crypto_info(crypto_name)
   return response_text
@@ -184,9 +193,10 @@ def get_huobi_info(crypto_name):
   ticker = get_ticker(symbol)
   try:
     price = ticker['tick']['ask'][0]
-    high = ticker['tick']['high']
-    low = ticker['tick']['low']
-    amount = int(ticker['amount'])
+    highday = ticker['tick']['high']
+    lowday = ticker['tick']['low']
+    amount = int(ticker['tick']['amount'])
+    official_name = get_official_name(crypto_name)
     return ' 货币代号: %s\n 货币全称:%s\n 实时价格: %s$\n 今日最高价: %s$\n 今日最低价: %s$\n 来源交易所: %s' %(crypto_name,official_name,price,highday,lowday,'Huobi')
   except Exception:
     print(traceback.format_exc())
@@ -227,7 +237,7 @@ def last():
   response_text = ""
   if("火币网" in query):
     response_text = "火币集团是全球领先的数字资产金融服务商。2013年，火币创始团队看到了区块链行业的巨大发展潜力，心怀推动全球新金融改革的愿景，创立火币集团。火币集团以“让金融更高效，让财富更自由”作为集团使命，秉承“用户至上”的服务理念，致力于为全球用户提供安全、专业、诚信、优质的服务。目前，火币集团已完成对新加坡、美国、日本、韩国、香港等多个国家及地区的布局。"
-  elif(is_crypto(query)):
+  elif(get_name(data)!=""):
     query=get_name(data)
     response_text = get_market_price(query)
   else:
