@@ -205,7 +205,7 @@ def get_huobi_info(crypto_name):
     official_name = get_official_name(crypto_name)
     return ' 货币代号: %s\n 货币全称:%s\n 实时价格: %s$\n 今日最高价: %s$\n 今日最低价: %s$\n 来源交易所: %s' %(crypto_name,official_name,price,highday,lowday,'HuobiPro')
   except Exception:
-    print(traceback.format_exc())
+    return(traceback.format_exc())
     return None
 def gen_crypto_info(crypto_name):
   print(crypto_name)
