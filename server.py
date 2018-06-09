@@ -187,7 +187,7 @@ def get_market_price(crypto_name):
   try:
     crypto_name = crypto_name.upper()
     response_text = get_huobi_info(crypto_name)
-    if response_text is None:
+    if response_text == None:
       response_text = gen_crypto_info(crypto_name)
     return response_text
   except Exception:
@@ -223,12 +223,12 @@ def gen_crypto_info(crypto_name):
         official_name = get_official_name(crypto_name)
         return ' 货币代号: %s\n 货币全称:%s\n 实时价格: %s\n 今日最高价: %s\n 今日最低价: %s\n 24小时涨幅: %s\n 今日涨幅: %s\n 来源交易所: %s' %(crypto_name,official_name, price,highday,lowday,change24,changeday,market)
       except Exception:
-        return (traceback.format_exc())
+        # return (traceback.format_exc())
         return "不好意思，小火查不到 %s 的行情呢" % (crypto_name)
     else:
       return "不好意思，小火找不到您说的数字货币呢"
   except Exception:
-    return (traceback.format_exc())
+    return ("get outerfail")
 
 def get_official_name(crypto_name):
   if crypto_name in info_dic:
