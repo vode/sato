@@ -184,7 +184,6 @@ def get_query(data):
 
 
 def get_market_price(crypto_name):
-  
     crypto_name = crypto_name.upper()
     response_text = get_huobi_info(crypto_name)
   try:
@@ -194,7 +193,7 @@ def get_market_price(crypto_name):
   except Exception:
     return ("get market failed1")
 
-def get_huobi_info(crypto_name): 
+def get_huobi_info(crypto_name):
   try:
     symbol = crypto_name.lower()+'usdt'
     ticker = get_ticker(symbol)
@@ -205,7 +204,7 @@ def get_huobi_info(crypto_name):
     official_name = get_official_name(crypto_name)
     return ' 货币代号: %s\n 货币全称:%s\n 实时价格: %s$\n 今日最高价: %s$\n 今日最低价: %s$\n 来源交易所: %s' %(crypto_name,official_name,price,highday,lowday,'HuobiPro')
   except Exception:
-    return(traceback.format_exc())
+    return("huobi failed")
     return None
 def gen_crypto_info(crypto_name):
   print(crypto_name)
