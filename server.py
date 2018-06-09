@@ -169,11 +169,12 @@ def get_name(data):
     return match_pattern.group(0)
   try:
     for crypto in info_dic.keys():
-      if crypto in data['nlp']['source'] or crypto.upper() in data['nlp']['source']:
+      if crypto in data['nlp']['source'] or crypto.lower() in data['nlp']['source']:
         return format(crypto)
     for key in mapper.keys():
       if key in data['nlp']['source']:
         return mapper[key]
+    return ""
   except Exception:
     print(traceback.format_exc())
     return ""
