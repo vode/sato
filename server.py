@@ -184,8 +184,8 @@ def get_query(data):
 
 
 def get_market_price(crypto_name):
-    crypto_name = crypto_name.upper()
-    response_text = get_huobi_info(crypto_name)
+  crypto_name = crypto_name.upper()
+  response_text = get_huobi_info(crypto_name)
   try:
     if response_text == None:
       response_text = gen_crypto_info(crypto_name)

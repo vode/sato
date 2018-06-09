@@ -138,9 +138,8 @@ mapper = {
 r = requests.get("https://www.cryptocompare.com/api/data/coinlist/")
 info_dic = r.json()["Data"]
 
-def is_crypto(name):
-  print(name)
-  name = name.upper()
+def is_crypto(param):
+  name = param.upper()
   if name in mapper or name in info_dic:
     return True
   else:
@@ -168,11 +167,12 @@ def get_name(data):
     return match_pattern.group(0)
   try:
     for crypto in info_dic.keys():
-      if crypto in data['nlp']['source'] or crypto.upper() in data['nlp']['source']:
+      if crypto in data['nlp']['source'] or crypto.lower() in data['nlp']['source']:
         return format(crypto)
     for key in mapper.keys():
       if key in data['nlp']['source']:
         return mapper[key]
+    return ""
   except Exception:
     print(traceback.format_exc())
     return ""
@@ -184,43 +184,49 @@ def get_query(data):
 def get_market_price(crypto_name):
   crypto_name = crypto_name.upper()
   response_text = get_huobi_info(crypto_name)
-  if response_text is None:
-    response_text = gen_crypto_info(crypto_name)
-  return response_text
+  try:
+    if response_text == None:
+      response_text = gen_crypto_info(crypto_name)
+    return response_text
+  except Exception:
+    return ("get market failed1")
 
 def get_huobi_info(crypto_name):
-  symbol = crypto_name.lower()+'usdt'
-  ticker = get_ticker(symbol)
   try:
+    symbol = crypto_name.lower()+'usdt'
+    ticker = get_ticker(symbol)
     price = ticker['tick']['ask'][0]
     highday = ticker['tick']['high']
     lowday = ticker['tick']['low']
     amount = int(ticker['tick']['amount'])
     official_name = get_official_name(crypto_name)
-    return ' 货币代号: %s\n 货币全称:%s\n 实时价格: %s$\n 今日最高价: %s$\n 今日最低价: %s$\n 来源交易所: %s' %(crypto_name,official_name,price,highday,lowday,'Huobi')
+    return ' 货币代号: %s\n 货币全称:%s\n 实时价格: %s$\n 今日最高价: %s$\n 今日最低价: %s$\n 来源交易所: %s' %(crypto_name,official_name,price,highday,lowday,'HuobiPro')
   except Exception:
-    print(traceback.format_exc())
+    return("huobi failed")
     return None
 def gen_crypto_info(crypto_name):
   print(crypto_name)
-  if is_crypto(crypto_name):
-    try:
-      r = requests.get("https://min-api.cryptocompare.com/data/pricemultifull?fsyms="+crypto_name+"&tsyms=USD")
-      print(r)
-      price =  r.json()['DISPLAY'][crypto_name]["USD"]["PRICE"]
-      openday = r.json()['DISPLAY'][crypto_name]["USD"]["OPENDAY"]
-      highday = r.json()['DISPLAY'][crypto_name]["USD"]["HIGHDAY"]
-      lowday = r.json()['DISPLAY'][crypto_name]["USD"]["LOWDAY"]
-      market = r.json()['DISPLAY'][crypto_name]["USD"]["LASTMARKET"]
-      change24 = r.json()['DISPLAY'][crypto_name]["USD"]["CHANGE24HOUR"]
-      changeday = r.json()['DISPLAY'][crypto_name]["USD"]["CHANGEDAY"]
-      official_name = get_official_name(crypto_name)
-      return ' 货币代号: %s\n 货币全称:%s\n 实时价格: %s\n 今日最高价: %s\n 今日最低价: %s\n 24小时涨幅: %s\n 今日涨幅: %s\n 来源交易所: %s' %(crypto_name,official_name, price,highday,lowday,change24,changeday,market)
-    except Exception:
-      print(traceback.format_exc())
-      return "不好意思，小火查不到 %s 的行情呢" % (crypto_name)
-  else:
-    return "不好意思，小火找不到您说的数字货币呢"
+  try:
+    if is_crypto(crypto_name):
+      try:
+        r = requests.get("https://min-api.cryptocompare.com/data/pricemultifull?fsyms="+crypto_name+"&tsyms=USD")
+        print(r)
+        price =  r.json()['DISPLAY'][crypto_name]["USD"]["PRICE"]
+        openday = r.json()['DISPLAY'][crypto_name]["USD"]["OPENDAY"]
+        highday = r.json()['DISPLAY'][crypto_name]["USD"]["HIGHDAY"]
+        lowday = r.json()['DISPLAY'][crypto_name]["USD"]["LOWDAY"]
+        market = r.json()['DISPLAY'][crypto_name]["USD"]["LASTMARKET"]
+        change24 = r.json()['DISPLAY'][crypto_name]["USD"]["CHANGE24HOUR"]
+        changeday = r.json()['DISPLAY'][crypto_name]["USD"]["CHANGEDAY"]
+        official_name = get_official_name(crypto_name)
+        return ' 货币代号: %s\n 货币全称:%s\n 实时价格: %s\n 今日最高价: %s\n 今日最低价: %s\n 24小时涨幅: %s\n 今日涨幅: %s\n 来源交易所: %s' %(crypto_name,official_name, price,highday,lowday,change24,changeday,market)
+      except Exception:
+        # return (traceback.format_exc())
+        return "不好意思，小火查不到 %s 的行情呢" % (crypto_name)
+    else:
+      return "不好意思，小火找不到您说的数字货币呢"
+  except Exception:
+    return ("get outerfail")
 
 def get_official_name(crypto_name):
   if crypto_name in info_dic:
@@ -235,13 +241,18 @@ def last():
   print(data)
   query = get_query(data)
   response_text = ""
-  if("火币网" in query):
-    response_text = "火币集团是全球领先的数字资产金融服务商。2013年，火币创始团队看到了区块链行业的巨大发展潜力，心怀推动全球新金融改革的愿景，创立火币集团。火币集团以“让金融更高效，让财富更自由”作为集团使命，秉承“用户至上”的服务理念，致力于为全球用户提供安全、专业、诚信、优质的服务。目前，火币集团已完成对新加坡、美国、日本、韩国、香港等多个国家及地区的布局。"
-  elif(get_name(data)!=""):
-    query=get_name(data)
-    response_text = get_market_price(query)
-  else:
-    response_text = "不好意思，小火不太明白你的问题呢\n你可以尝试提问：\n推荐群\n比特币的价格\n如何下载火币App\n火币网简介\n"
+  try:
+    if("火币网" in query):
+      response_text = "火币集团是全球领先的数字资产金融服务商。2013年，火币创始团队看到了区块链行业的巨大发展潜力，心怀推动全球新金融改革的愿景，创立火币集团。火币集团以“让金融更高效，让财富更自由”作为集团使命，秉承“用户至上”的服务理念，致力于为全球用户提供安全、专业、诚信、优质的服务。目前，火币集团已完成对新加坡、美国、日本、韩国、香港等多个国家及地区的布局。"
+    elif(get_name(data)!=""):
+      response_text = query
+      crypto_name=get_name(data)
+      response_text = get_market_price(crypto_name)
+    else:
+      response_text = "不好意思，小火不太明白你的问题呢\n你可以尝试提问：\n推荐群\n比特币的价格\n如何下载火币App\n火币网简介\n"
+    
+  except Exception:
+    response_text = traceback.format_exc()
   return jsonify(
       status=200,
       replies=[{
