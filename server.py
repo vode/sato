@@ -194,9 +194,9 @@ def get_market_price(crypto_name):
   except Exception:
     return ("get market failed1")
 
-def get_huobi_info(crypto_name):
-  symbol = crypto_name.lower()+'usdt'
+def get_huobi_info(crypto_name): 
   try:
+    symbol = crypto_name.lower()+'usdt'
     ticker = get_ticker(symbol)
     price = ticker['tick']['ask'][0]
     highday = ticker['tick']['high']
