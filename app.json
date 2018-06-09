@@ -3,7 +3,7 @@
   "description": "The server side for Sato.",
   "image": "heroku/python",
   "repository": "https://github.com/vode/sato",
-  "keywords": ["python", "flask" ],
+  "keywords": ["python3", "flask" ],
   "addons": [ "heroku-postgresql" ],
   "environments": {
     "test": {
