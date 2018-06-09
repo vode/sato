@@ -187,7 +187,7 @@ def get_market_price(crypto_name):
   crypto_name = crypto_name.upper()
   response_text = get_huobi_info(crypto_name)
   try:
-    if response_text == None:
+    if response_text == None or response_text == "huobi failed":
       response_text = gen_crypto_info(crypto_name)
     return response_text
   except Exception:
@@ -205,7 +205,6 @@ def get_huobi_info(crypto_name):
     return ' 货币代号: %s\n 货币全称:%s\n 实时价格: %s$\n 今日最高价: %s$\n 今日最低价: %s$\n 来源交易所: %s' %(crypto_name,official_name,price,highday,lowday,'HuobiPro')
   except Exception:
     return("huobi failed")
-    return None
 def gen_crypto_info(crypto_name):
   print(crypto_name)
   try:
