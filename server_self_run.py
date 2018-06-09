@@ -5,11 +5,148 @@ import traceback
 app = Flask(__name__)
 port = '5001'
 
-from flask import Flask, request, jsonify
+import base64
+import hmac
+import hashlib
 import json
+
+import urllib
+import datetime
 import requests
-import os
-import re
+import urllib2
+import urlparse
+
+# timeout in 5 seconds:
+TIMEOUT = 5
+
+API_HOST = "api.huobi.pro"
+
+SCHEME = 'https'
+
+# language setting: 'zh-CN', 'en':
+LANG = 'zh-CN'
+
+DEFAULT_GET_HEADERS = {
+    'Accept': 'application/json',
+    'Accept-Language': LANG,
+    'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:53.0) Gecko/20100101 Firefox/53.0'
+}
+
+DEFAULT_POST_HEADERS = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'Accept-Language': LANG,
+    'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:53.0) Gecko/20100101 Firefox/53.0'
+}
+# 此处填写APIKEY
+
+ACCESS_KEY = "d2e82710-03c51810-9fed7063-7ba8f"
+SECRET_KEY = "b12fe6f4-dccb03b3-54fcdf43-bda24"
+
+
+# 首次运行可通过get_accounts()获取acct_id,然后直接赋值,减少重复获取。
+ACCOUNT_ID = None
+
+
+# API 请求地址
+MARKET_URL = TRADE_URL = "https://api.huobi.pro"
+
+#各种请求,获取数据方式
+def http_get_request(url, params, add_to_headers=None):
+    headers = {
+        "Content-type": "application/x-www-form-urlencoded",
+        'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:53.0) Gecko/20100101 Firefox/53.0'
+    }
+    if add_to_headers:
+        headers.update(add_to_headers)
+    postdata = urllib.urlencode(params)
+    try:
+        response = requests.get(url, postdata, headers=headers, timeout=TIMEOUT)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return {"status":"fail"}
+    except Exception as e:
+        print("httpGet failed, detail is:%s" %e)
+        return {"status":"fail","msg":e}
+
+def http_post_request(url, params, add_to_headers=None):
+    headers = {
+        "Accept": "application/json",
+        'Content-Type': 'application/json',
+        "User-Agent": "Chrome/39.0.2171.71",
+        'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:53.0) Gecko/20100101 Firefox/53.0'
+    }
+    if add_to_headers:
+        headers.update(add_to_headers)
+    postdata = json.dumps(params)
+    try:
+        response = requests.post(url, postdata, headers=headers, timeout=TIMEOUT)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return response.json()
+    except Exception as e:
+        print("httpPost failed, detail is:%s" % e)
+        return {"status":"fail","msg":e}
+
+
+def api_key_get(params, request_path):
+    method = 'GET'
+    timestamp = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S')
+    params.update({'AccessKeyId': ACCESS_KEY,
+                   'SignatureMethod': 'HmacSHA256',
+                   'SignatureVersion': '2',
+                   'Timestamp': timestamp})
+
+    host_name = host_url = TRADE_URL
+    host_name = urlparse.urlparse(host_url).hostname
+    host_name = host_name.lower()
+
+
+    params['Signature'] = createSign(params, method, host_name, request_path, SECRET_KEY)
+    url = host_url + request_path
+    return http_get_request(url, params)
+
+
+def api_key_post(params, request_path):
+    method = 'POST'
+    timestamp = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S')
+    params_to_sign = {'AccessKeyId': ACCESS_KEY,
+                      'SignatureMethod': 'HmacSHA256',
+                      'SignatureVersion': '2',
+                      'Timestamp': timestamp}
+
+    host_url = TRADE_URL
+    host_name = urlparse.urlparse(host_url).hostname
+    host_name = host_name.lower()
+    params_to_sign['Signature'] = createSign(params_to_sign, method, host_name, request_path, SECRET_KEY)
+    url = host_url + request_path + '?' + urllib.urlencode(params_to_sign)
+    return http_post_request(url, params)
+
+
+def createSign(pParams, method, host_url, request_path, secret_key):
+    sorted_params = sorted(pParams.items(), key=lambda d: d[0], reverse=False)
+    encode_params = urllib.urlencode(sorted_params)
+    payload = [method, host_url, request_path, encode_params]
+    payload = '\n'.join(payload)
+    payload = payload.encode(encoding='UTF8')
+    secret_key = secret_key.encode(encoding='UTF8')
+    digest = hmac.new(secret_key, payload, digestmod=hashlib.sha256).digest()
+    signature = base64.b64encode(digest)
+    signature = signature.decode()
+    return signature
+
+# 获取merge ticker
+def get_ticker(symbol):
+    """
+    :param symbol: 
+    :return:
+    """
+    params = {'symbol': symbol}
+
+    url = MARKET_URL + '/market/detail/merged'
+    return http_get_request(url, params)
 
 mapper = {
   "比特币": "BTC",
@@ -20,13 +157,13 @@ mapper = {
 }
 r = requests.get("https://www.cryptocompare.com/api/data/coinlist/")
 info_dic = r.json()["Data"]
+
 def is_crypto(name):
   print(name)
   if name in mapper or name in info_dic:
     return True
   else:
     return False
-
 
 def format(name):
   if name in mapper:
@@ -42,13 +179,10 @@ def match(name):
 def get_name(data):
   try:
     for crypto in info_dic.keys():
-      if crypto in data['nlp']['source']:
-        print('######')
+      if crypto in data['nlp']['source'] or crypto.lower() in data['nlp']['source']:
         return format(crypto)
     for key in mapper.keys():
-      print(key,data['nlp']['source'])
       if key in data['nlp']['source']:
-        print('!!!!',mapper[key])
         return mapper[key]
   except Exception:
     print(traceback.format_exc())
@@ -57,6 +191,26 @@ def get_name(data):
 def get_query(data):
   return data['nlp']['source']
 
+
+def get_market_price(crypto_name):
+  crypto_name = crypto_name.upper()
+  response_txt = get_huobi_info(crypto_name)
+  if response_text is None:
+    response_text = gen_crypto_info(crypto_name)
+  return response_text
+
+def get_huobi_info(crypto_name):
+  symbol = crypto_name.lower()+'usdt'
+  ticker = get_ticker(symbol)
+  try:
+    price = ticker['tick']['ask'][0]
+    high = ticker['tick']['high']
+    low = ticker['tick']['low']
+    amount = int(ticker['amount'])
+    return ' 货币代号: %s\n 货币全称:%s\n 实时价格: %s$\n 今日最高价: %s$\n 今日最低价: %s$\n 来源交易所: %s' %(crypto_name,official_name,price,highday,lowday,'Huobi')
+  except Exception:
+    print(traceback.format_exc())
+    return None
 def gen_crypto_info(crypto_name):
   print(crypto_name)
   if is_crypto(crypto_name):
@@ -95,7 +249,7 @@ def last():
     response_text = "火币集团是全球领先的数字资产金融服务商。2013年，火币创始团队看到了区块链行业的巨大发展潜力，心怀推动全球新金融改革的愿景，创立火币集团。火币集团以“让金融更高效，让财富更自由”作为集团使命，秉承“用户至上”的服务理念，致力于为全球用户提供安全、专业、诚信、优质的服务。目前，火币集团已完成对新加坡、美国、日本、韩国、香港等多个国家及地区的布局。"
   elif(is_crypto(query)):
     query=get_name(data)
-    response_text = gen_crypto_info(query)
+    response_text = get_market_price(query)
   else:
     response_text = "不好意思，小火不太明白你的问题呢\n你可以尝试提问：\n推荐群\n比特币的价格\n如何下载火币App\n火币网简介\n"
   return jsonify(
@@ -114,7 +268,7 @@ def price():
   # FETCH THE CRYPTO NAME
   crypto_name = get_name(data)
   print(crypto_name)
-  response_text = gen_crypto_info(crypto_name)
+  response_text = get_market_price(crypto_name)
   return jsonify(
     status=200,
     replies=[{
