@@ -191,8 +191,8 @@ def get_market_price(crypto_name):
 
 def get_huobi_info(crypto_name):
   symbol = crypto_name.lower()+'usdt'
-  ticker = get_ticker(symbol)
   try:
+    ticker = get_ticker(symbol)
     price = ticker['tick']['ask'][0]
     highday = ticker['tick']['high']
     lowday = ticker['tick']['low']
