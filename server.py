@@ -140,9 +140,8 @@ mapper = {
 r = requests.get("https://www.cryptocompare.com/api/data/coinlist/")
 info_dic = r.json()["Data"]
 
-def is_crypto(name):
-  print(name)
-  name = name.upper()
+def is_crypto(param):
+  name = param.upper()
   if name in mapper or name in info_dic:
     return True
   else:
@@ -205,24 +204,27 @@ def get_huobi_info(crypto_name):
     return None
 def gen_crypto_info(crypto_name):
   print(crypto_name)
-  if is_crypto(crypto_name):
-    try:
-      r = requests.get("https://min-api.cryptocompare.com/data/pricemultifull?fsyms="+crypto_name+"&tsyms=USD")
-      print(r)
-      price =  r.json()['DISPLAY'][crypto_name]["USD"]["PRICE"]
-      openday = r.json()['DISPLAY'][crypto_name]["USD"]["OPENDAY"]
-      highday = r.json()['DISPLAY'][crypto_name]["USD"]["HIGHDAY"]
-      lowday = r.json()['DISPLAY'][crypto_name]["USD"]["LOWDAY"]
-      market = r.json()['DISPLAY'][crypto_name]["USD"]["LASTMARKET"]
-      change24 = r.json()['DISPLAY'][crypto_name]["USD"]["CHANGE24HOUR"]
-      changeday = r.json()['DISPLAY'][crypto_name]["USD"]["CHANGEDAY"]
-      official_name = get_official_name(crypto_name)
-      return ' 货币代号: %s\n 货币全称:%s\n 实时价格: %s\n 今日最高价: %s\n 今日最低价: %s\n 24小时涨幅: %s\n 今日涨幅: %s\n 来源交易所: %s' %(crypto_name,official_name, price,highday,lowday,change24,changeday,market)
-    except Exception:
-      return (traceback.format_exc())
-      return "不好意思，小火查不到 %s 的行情呢" % (crypto_name)
-  else:
-    return "不好意思，小火找不到您说的数字货币呢"
+  try:
+    if is_crypto(crypto_name):
+      try:
+        r = requests.get("https://min-api.cryptocompare.com/data/pricemultifull?fsyms="+crypto_name+"&tsyms=USD")
+        print(r)
+        price =  r.json()['DISPLAY'][crypto_name]["USD"]["PRICE"]
+        openday = r.json()['DISPLAY'][crypto_name]["USD"]["OPENDAY"]
+        highday = r.json()['DISPLAY'][crypto_name]["USD"]["HIGHDAY"]
+        lowday = r.json()['DISPLAY'][crypto_name]["USD"]["LOWDAY"]
+        market = r.json()['DISPLAY'][crypto_name]["USD"]["LASTMARKET"]
+        change24 = r.json()['DISPLAY'][crypto_name]["USD"]["CHANGE24HOUR"]
+        changeday = r.json()['DISPLAY'][crypto_name]["USD"]["CHANGEDAY"]
+        official_name = get_official_name(crypto_name)
+        return ' 货币代号: %s\n 货币全称:%s\n 实时价格: %s\n 今日最高价: %s\n 今日最低价: %s\n 24小时涨幅: %s\n 今日涨幅: %s\n 来源交易所: %s' %(crypto_name,official_name, price,highday,lowday,change24,changeday,market)
+      except Exception:
+        return (traceback.format_exc())
+        return "不好意思，小火查不到 %s 的行情呢" % (crypto_name)
+    else:
+      return "不好意思，小火找不到您说的数字货币呢"
+  except Exception:
+    return (traceback.format_exc())
 
 def get_official_name(crypto_name):
   if crypto_name in info_dic:
